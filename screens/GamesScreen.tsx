@@ -1,6 +1,8 @@
+
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import GradientBackground from '../components/GradientBackground';
 
 const games = [
   {
@@ -51,33 +53,35 @@ export default function GamesScreen() {
     '/problem-solving',
     '/spatial-skills',
     '/mental-calculation',
-  ];
+  ] as const;
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Cognitive Games</Text>
-      <Text style={styles.text}>Engage in interactive games designed to test memory, reaction time, problem-solving, and spatial skills. These fun activities help measure cognitive abilities.</Text>
-      <View style={styles.gamesGrid}>
-        {games.map((game, idx) => (
-          <View key={idx} style={styles.card}>
-            <View style={[styles.difficultyBadge, {backgroundColor: game.color}]}> 
-              <Text style={styles.difficultyText}>{game.difficulty}</Text>
+    <GradientBackground>
+      <View style={styles.container}>
+        <Text style={styles.title}>Cognitive Games</Text>
+        <Text style={styles.text}>Engage in interactive games designed to test memory, reaction time, problem-solving, and spatial skills. These fun activities help measure cognitive abilities.</Text>
+        <View style={styles.gamesGrid}>
+          {games.map((game, idx) => (
+            <View key={idx} style={styles.card}>
+              <View style={[styles.difficultyBadge, {backgroundColor: game.color}]}> 
+                <Text style={styles.difficultyText}>{game.difficulty}</Text>
+              </View>
+              <Text style={styles.cardTitle}>{game.title}</Text>
+              <Text style={styles.cardDesc}>{game.description}</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={() => router.push(screenPaths[idx])}>
+                  <Text style={styles.playButton}>Play Now</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Text style={styles.cardTitle}>{game.title}</Text>
-            <Text style={styles.cardDesc}>{game.description}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={() => router.push(screenPaths[idx])}>
-                <Text style={styles.playButton}>Play Now</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
+          ))}
+        </View>
       </View>
-    </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 16, backgroundColor: '#f7f9fb' },
+  container: { flex: 1, alignItems: 'center', padding: 16, backgroundColor: 'transparent' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#2d7be5', marginTop: 24, marginBottom: 8 },
   text: { fontSize: 16, color: '#444', textAlign: 'center', marginBottom: 16 },
   gamesGrid: {

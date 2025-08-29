@@ -1,17 +1,69 @@
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useUser } from '../context/UserContext';
 
+
+import GradientBackground from '../components/GradientBackground';
 
 export default function ProfileScreen() {
   const { user, updateProfile, logout } = useUser();
   const [bio, setBio] = useState(user?.bio || '');
   const [editing, setEditing] = useState(false);
   const [photo, setPhoto] = useState(user?.photo);
+  const [stats, setStats] = useState<any>(null);
 
-  if (!user) return <View style={styles.container}><Text>Not logged in.</Text></View>;
+  // Load stats from AsyncStorage every time the screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      let isActive = true;
+      (async () => {
+        const keys = [
+          'score_MemorySequence',
+          'score_MentalMath',
+          'score_MentalCalculation',
+          'score_Quiz',
+        ];
+        const result: any = {};
+        for (const key of keys) {
+          const val = await AsyncStorage.getItem(key);
+          result[key] = val ? Number(val) : 0;
+        }
+        if (isActive) setStats(result);
+      })();
+      return () => { isActive = false; };
+    }, [])
+  );
+
+  // Simple cognitive decline probability: if all scores are low, probability is high
+  function getCognitiveDeclineProbability() {
+    if (!stats) return null;
+    const maxes = {
+      score_MemorySequence: 10,
+      score_MentalMath: 10,
+      score_MentalCalculation: 10,
+      score_Quiz: 10,
+    };
+    let sum = 0;
+    let total = 0;
+    (Object.keys(maxes) as (keyof typeof maxes)[]).forEach((k) => {
+      sum += Math.min(stats[k] ?? 0, maxes[k]);
+      total += maxes[k];
+    });
+    const percent = 1 - sum / total;
+    // Clamp between 0.05 and 0.95 for realism
+    return Math.max(0.05, Math.min(0.95, percent));
+  }
+
+  if (!user) return (
+    <View style={styles.container}>
+      <GradientBackground>{null}</GradientBackground>
+      <Text>Not logged in.</Text>
+    </View>
+  );
 
   const handleSave = async () => {
     await updateProfile({ bio, photo });
@@ -39,7 +91,8 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
+      <GradientBackground>{null}</GradientBackground>
       <View style={styles.card}>
         <TouchableOpacity onPress={editing ? pickImage : undefined} style={styles.avatarWrapper} activeOpacity={editing ? 0.7 : 1}>
           {photo ? (
@@ -84,15 +137,69 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+
+      {/* Dashboard Section */}
+      <View style={styles.dashboardCard}>
+        <Text style={styles.dashboardTitle}>Dashboard</Text>
+        {stats ? (
+          <>
+            <Text style={styles.dashboardLabel}>Memory Sequence: <Text style={styles.dashboardValue}>{stats.score_MemorySequence ?? 0}</Text></Text>
+            <Text style={styles.dashboardLabel}>Mental Math: <Text style={styles.dashboardValue}>{stats.score_MentalMath ?? 0}</Text></Text>
+            <Text style={styles.dashboardLabel}>Mental Calculation: <Text style={styles.dashboardValue}>{stats.score_MentalCalculation ?? 0}</Text></Text>
+            <Text style={styles.dashboardLabel}>Quiz: <Text style={styles.dashboardValue}>{stats.score_Quiz ?? 0}</Text></Text>
+            <View style={{marginVertical: 10}} />
+            <Text style={styles.dashboardLabel}>Cognitive decline probability:</Text>
+            <Text style={[styles.dashboardValue, {fontSize: 22, color: (getCognitiveDeclineProbability() ?? 0) > 0.5 ? '#d32f2f' : '#388e3c'}]}>
+              {Math.round(((getCognitiveDeclineProbability() ?? 0) * 100))}%
+            </Text>
+            <Text style={{fontSize:12, color:'#888', textAlign:'center', marginTop:4}}>
+              (Estimate based on local scores. This is not a medical diagnosis.)
+            </Text>
+          </>
+        ) : (
+          <Text style={styles.dashboardLabel}>Loading data...</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 const styles = StyleSheet.create({
+  dashboardCard: {
+    width: 320,
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+    marginTop: 24,
+    marginBottom: 32,
+  },
+  dashboardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2d7be5',
+    marginBottom: 10,
+  },
+  dashboardLabel: {
+    fontSize: 16,
+    color: '#444',
+    marginBottom: 2,
+    textAlign: 'center',
+  },
+  dashboardValue: {
+    fontWeight: 'bold',
+    color: '#2d7be5',
+    fontSize: 18,
+  },
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f3f6fa',
+    backgroundColor: 'transparent',
   },
   card: {
     width: 320,

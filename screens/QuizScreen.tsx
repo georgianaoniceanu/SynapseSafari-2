@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import GradientBackground from '../components/GradientBackground';
 
 type QuizQuestion = {
   question: string;
@@ -139,32 +140,35 @@ function QuizModal({ visible, onClose, quiz }: QuizModalProps) {
 function QuizScreen() {
   const [openQuiz, setOpenQuiz] = useState<Quiz | null>(null);
   return (
-    <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-      <Text style={styles.title}>Quizzes</Text>
-      <Text style={styles.text}>Choose a quiz to test your memory, reaction speed, or logic!</Text>
-      <View style={styles.gamesGrid}>
-        {quizList.map((quiz, idx) => (
-          <View key={quiz.title} style={styles.card}>
-            <View style={[styles.difficultyBadge, { backgroundColor: quiz.color }]}> 
-              <Text style={styles.difficultyText}>{idx === 0 ? 'Memory' : idx === 1 ? 'Reaction' : 'Logic'}</Text>
+    <View style={{ flex: 1 }}>
+  <GradientBackground>{null}</GradientBackground>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.title}>Quizzes</Text>
+        <Text style={styles.text}>Choose a quiz to test your memory, reaction speed, or logic!</Text>
+        <View style={styles.gamesGrid}>
+          {quizList.map((quiz, idx) => (
+            <View key={quiz.title} style={styles.card}>
+              <View style={[styles.difficultyBadge, { backgroundColor: quiz.color }]}> 
+                <Text style={styles.difficultyText}>{idx === 0 ? 'Memory' : idx === 1 ? 'Reaction' : 'Logic'}</Text>
+              </View>
+              <Text style={styles.cardTitle}>{quiz.title}</Text>
+              <Text style={styles.cardDesc}>{quiz.description}</Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity onPress={() => setOpenQuiz(quiz)}>
+                  <Text style={styles.playButton}>Start Quiz</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <Text style={styles.cardTitle}>{quiz.title}</Text>
-            <Text style={styles.cardDesc}>{quiz.description}</Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity onPress={() => setOpenQuiz(quiz)}>
-                <Text style={styles.playButton}>Start Quiz</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-      </View>
-      <QuizModal visible={!!openQuiz} onClose={() => setOpenQuiz(null)} quiz={openQuiz} />
-    </ScrollView>
+          ))}
+        </View>
+        <QuizModal visible={!!openQuiz} onClose={() => setOpenQuiz(null)} quiz={openQuiz} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', padding: 16, backgroundColor: '#f7f9fb' },
+  container: { flex: 1, alignItems: 'center', padding: 16, backgroundColor: 'transparent' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#2d7be5', marginTop: 24, marginBottom: 8 },
   text: { fontSize: 16, color: '#444', textAlign: 'center', marginBottom: 16 },
   gamesGrid: {
