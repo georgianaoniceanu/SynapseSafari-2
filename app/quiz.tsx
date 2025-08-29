@@ -3,16 +3,19 @@ import React, { useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import DrawerMenu from '../components/DrawerMenu';
 import HeaderBar from '../components/HeaderBar';
+
+import { ScrollView } from 'react-native';
+
 import QuizScreen from '../screens/QuizScreen';
 
 export default function QuizPage() {
 	const [drawerOpen, setDrawerOpen] = useState(false);
 	return (
 		<View style={styles.container}>
-			<HeaderBar onMenuPress={() => setDrawerOpen(true)} title="Quiz" showBack />
-			<View style={styles.contentWrapper}>
+			<HeaderBar onMenuPress={() => setDrawerOpen(true)} title="Quizzes" />
+			<ScrollView contentContainerStyle={styles.contentWrapper} showsVerticalScrollIndicator={false}>
 				<QuizScreen />
-			</View>
+			</ScrollView>
 			<Modal
 				visible={drawerOpen}
 				animationType="slide"
@@ -27,17 +30,15 @@ export default function QuizPage() {
 		</View>
 	);
 }
-
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: '#f5f8fc',
 	},
 	contentWrapper: {
-		flex: 1,
-		justifyContent: 'center',
-		alignItems: 'center',
+		flexGrow: 1,
 		marginTop: Platform.OS === 'web' ? 32 : 0,
+		paddingBottom: 32,
 	},
 	overlay: {
 		position: 'absolute',
